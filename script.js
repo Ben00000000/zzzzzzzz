@@ -2,22 +2,22 @@ const joystickZone = document.getElementById('joystick');
 let playerX = window.innerWidth / 2;
 let playerY = window.innerHeight - player.offsetHeight; // Set player at the bottom
 let isHPDecreasing = false;
-let speed = 0.2;
+let speed = 0.5;
 const bullets = [];
 let enemiesRemoved = 0;
 let currentStage = 1;
 let enemiesRespawned = 0;
-let enemiesPerStage = [1,1, 1];
+let enemiesPerStage = [40,80, 1];
 let playermoving = false;
 let bossHP = 100; // Set the initial HP
 let playerHP = 30; // Initial player health
 const playerHPBar = document.getElementById('player-hp-bar');
 const bossBullets = [];
 let lastBossBulletTime = 0;
+const shootSound = new Audio('shoot.mp3');
+const hitSound = new Audio('hit.wav');
 
-
-
-const imageUrlsToPreload = [
+const assetUrlsToPreload = [
   'soldiersprite.png',
   'soldiershoot.png',
   'explosion1.png',
@@ -26,35 +26,46 @@ const imageUrlsToPreload = [
   'boss.png',
   'enb.png',
   'enemysprite.png',
-   'fenemy.png',
-    'stage1.png',
-     'stage2.png',
-      'stage3.png',
+  'fenemy.png',
+  'stage1.png',
+  'stage2.png',
+  'stage3.png',
+  'shoot.mp3',
+  'hit.wav',
 ];
 
+// Function to preload assets (images and audio)
+function preloadAssets(assetUrls, callback) {
+  let assetsLoaded = 0;
 
-// Function to preload images
-function preloadImages(imageUrls, callback) {
-  let imagesLoaded = 0;
+  function assetLoaded() {
+    assetsLoaded++;
 
-  function imageLoaded() {
-    imagesLoaded++;
-
-    if (imagesLoaded === imageUrls.length) {
-      // All images are loaded, invoke the callback function
+    if (assetsLoaded === assetUrls.length) {
+      // All assets are loaded, invoke the callback function
       callback();
     }
   }
 
-  // Load each image
-  imageUrls.forEach((imageUrl) => {
-    const image = new Image();
-    image.src = imageUrl;
-    image.addEventListener('load', imageLoaded);
+  // Load each asset
+  assetUrls.forEach((assetUrl) => {
+    const isAudio = assetUrl.endsWith('.mp3') || assetUrl.endsWith('.wav');
+
+    if (isAudio) {
+      const audio = new Audio();
+      audio.src = assetUrl;
+      audio.addEventListener('loadeddata', assetLoaded);
+    } else {
+      const image = new Image();
+      image.src = assetUrl;
+      image.addEventListener('load', assetLoaded);
+    }
   });
 }
 
-preloadImages(imageUrlsToPreload, hidepreloader);
+// Usage:
+preloadAssets(assetUrlsToPreload, hidepreloader);
+
 // Hide the preloader when the page is fully loaded
 function hidepreloader(){
   const preloader = document.getElementById('preloader');
@@ -318,50 +329,52 @@ function moveEnemyTowardsPlayer(enemy, playerX, playerY) {
         playerX + player.offsetWidth / 2 - (enemyX + enemy.offsetWidth / 2)
       );
 
-      const moveX = Math.cos(angle) * speed * 5;
-      const moveY = Math.sin(angle) * speed * 5;
+      const moveX = Math.cos(angle) * speed * 4;
+      const moveY = Math.sin(angle) * speed * 4;
 
       enemy.style.left = `${enemyX + moveX}px`;
       enemy.style.top = `${enemyY + moveY}px`;
 
       // Check the vertical movement direction and apply the flip class
-      if (moveX < 0) {
-        enemy.classList.add('flipped-horizontal');
+      if (moveY < 0) {
+        enemy.classList.add('flipped-vertical');
       } else {
-        enemy.classList.remove('flipped-horizontal');
+        enemy.classList.remove('flipped-vertical');
       }
-    } else {
-      // Boss enemy behavior
-      const bossSpeed = 1; // You can adjust the speed as needed
+    } // Boss enemy behavior
+            const bossSpeed = 1; // You can adjust the speed as needed
 
-      // Check if the boss is moving left or right
-      const isMovingLeft = enemy.classList.contains('moving-left');
+            // Check if the boss is moving left or right
+            const isMovingLeft = enemy.classList.contains('moving-left');
 
-      // Calculate the movement based on the direction
-      const moveX = isMovingLeft ? -bossSpeed : bossSpeed;
+            // Calculate the movement based on the direction
+            const moveX = isMovingLeft ? -bossSpeed : bossSpeed;
 
-      // Update the boss position
-      enemy.style.left = `${enemyX + moveX}px`;
+            // Update the boss position
+            enemy.style.left = `${enemyX + moveX}px`;
 
-      // Toggle the direction based on the screen boundaries
-      if (enemyX <= 0) {
-        enemy.classList.remove('moving-left');
-      } else if (enemyX + enemy.offsetWidth >= window.innerWidth) {
-        enemy.classList.add('moving-left');
-      }
+            // Toggle the direction based on the screen boundaries
+            if (enemyX <= 0) {
+              enemy.classList.remove('moving-left');
+            } else if (enemyX + enemy.offsetWidth >= window.innerWidth) {
+              enemy.classList.add('moving-left');
+            }
 
-      // Flip the boss horizontally based on its movement direction
-      enemy.style.transform = isMovingLeft ? 'scaleX(-1)' : 'scaleX(1)';
-    }
-  }
-}
+            // Flip the boss horizontally based on its movement direction
+            enemy.style.transform = isMovingLeft ? 'scaleX(-1)' : 'scaleX(1)';
+          }
+        }
+
 
 
 
 
 
 var lastBulletTime = 0; // Variable to track the last time a bullet was created
-
+function playShootSound() {
+  shootSound.currentTime = 0; // Reset the audio to the beginning
+  shootSound.play();
+}
 function createBullet() {
  if (isGameOverScreenVisible() || isWinScreenVisible()) {
     return; // Stop the game loop if the end screens are visible
@@ -373,7 +386,8 @@ function createBullet() {
     // If not, return and do nothing
     return;
   }
-
+// Play the shoot sound when a bullet is created
+  playShootSound();
   const bullet = document.createElement('div');
   bullet.className = 'bullet';
 
@@ -518,11 +532,11 @@ if( !playermoving){
           // Add a delay (e.g., 1000 milliseconds) before creating a new enemy
           setTimeout(function () {
             // Call the code to create a new enemy after the delay
-            if (Math.random() < 0.1) {
+            if (Math.random() < 0.01) {
               const newEnemy = createEnemy();
               moveEnemyTowardsPlayer(newEnemy, playerX, playerY);
             }
-          }, 5000);
+          }, 500);
           }
           }
           checkPlayerBossBulletCollision();
@@ -607,7 +621,11 @@ function showWinScreen() {
   winScreen.style.display = 'block';
 }
 
-
+// Function to play the hit sound
+function playHitSound() {
+  hitSound.currentTime = 0; // Reset the audio to the beginning
+  hitSound.play();
+}
 
 // Modify the collision detection function to include HP decrease
 function checkBulletEnemyCollision() {
@@ -624,6 +642,8 @@ function checkBulletEnemyCollision() {
         bulletRect.left < enemyRect.right &&
         bulletRect.right > enemyRect.left
       ) {
+      // Play hit sound when a bullet hits an enemy
+              playHitSound();
         // Play explosion animation
         playExplosionAnimation(enemy);
 
