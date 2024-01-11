@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soldier Spectral Retreat</title>
+    <style>
+        body {
+            background-image: url('stage1.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            height: 100vh; /* Make the body full height of the viewport */
+            -webkit-tap-highlight-color: transparent;
+             overflow: hidden;
+             user-select: none;
+        }
+            img {
+            margin-top: 60px;
+            margin-bottom: 50px;
+            animation: scaleAnimation 2s infinite alternate; /* Non-stop scaling animation */
+        }
+
+        @keyframes scaleAnimation {
+            0% {
+                transform: scale(1);
+            }
+            100% {
+                transform: scale(1.1);
+            }
+        }
+
+        #menu-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 80vh;
+        }
+
+        .menu-button {
+            background-color: transparent;
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            margin: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 50%; /* Make the button circular */
+            width: 110px;
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .start-button {
+            background: url('playn.png') center/cover;
+        }
+
+        .start-button.active {
+            background: url('playa.png') center/cover;
+        }
+
+        .info-button {
+            background: url('infon.png') center/cover;
+        }
+
+        .info-button.active {
+            background: url('infoa.png') center/cover;
+        }
+
+        .menu-button:hover {
+            background-color: #45a049;
+        }
+          .menu-button.clicked {
+            animation: scaleDown 0.5s ease-in-out;
+        }
+
+        @keyframes scaleDown {
+            0% {
+                transform: scale(1);
+            }
+            100% {
+                transform: scale(0.8);
+            }
+        }
+        #info-box {
+            border-radius: 5%;
+            display: none;
+            position: fixed;
+            top: 10%; /* Adjust as needed */
+            left: 0;
+            width: 100%;
+            height: 80vh; /* 30% of the viewport height */
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+         #preloader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: black; /* Background color of the preloader */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000; /* Set a high z-index to make sure it's on top */
+    }
+
+    </style>
+</head>
+<body>
+<div id="preloader">
+    <div id="loader"></div>
+</div>
+<div id="menu-container">
+    <img src="nav.png" alt="Soldier Spectral Retreat Logo">
+    <button class="menu-button start-button" onclick="startGame(this)" ontouchstart="startGame(this)"></button>
+    <button class="menu-button info-button" onclick="showInfo(this)" ontouchstart="showInfo(this)"></button>
+</div>
+<div id="info-box"></div>
+
+<script>
+// Hide the preloader when the page is fully loaded
+window.addEventListener('load', function() {
+  const preloader = document.getElementById('preloader');
+  preloader.style.display = 'none';
+});
+   document.addEventListener('DOMContentLoaded', function () {
+        // Add a click event listener to the document
+        document.addEventListener('click', function (event) {
+            var infoBox = document.getElementById('info-box');
+
+            // Check if the clicked element is not inside the info box
+            if (!infoBox.contains(event.target) && infoBox.style.display === 'block') {
+                // Close the info box
+                hideInfoBox();
+            }
+        });
+    });
+
+    function startGame(button) {
+        animateButtonClick(button);
+
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 500);
+    }
+
+    function showInfo(button) {
+        animateButtonClick(button);
+        showInfoBox();
+    }
+
+    function hideInfoBox() {
+        var infoBox = document.getElementById('info-box');
+        infoBox.style.display = 'none';
+    }
+
+    function animateButtonClick(button) {
+        button.classList.add('clicked');
+        setTimeout(() => {
+            button.classList.remove('clicked');
+        }, 500);
+    }
+
+    function showInfoBox() {
+        var infoBox = document.getElementById('info-box');
+        infoBox.style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
